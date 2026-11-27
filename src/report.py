@@ -13,6 +13,10 @@ def bars(items):
         f'<div class="b"><span>{escape(n)}</span><i style="width:{v}%"></i><em>{v}%</em></div>' for n, v in items)
 
 def build(rows):
+    if not rows:
+        return ('<!doctype html><html lang="fr"><meta charset="utf-8">'
+                '<title>KPI Transport</title><h1>Tableau de bord KPI transport</h1>'
+                '<p>Aucune expédition dans le fichier CSV.</p></html>')
     tot = summarize(rows)["TOTAL"]
     rk = ranking(rows)
     dest = summarize(rows, "destination")
@@ -21,7 +25,7 @@ def build(rows):
         ("Expeditions", tot["expeditions"]), ("Ponctualite (OTD)", f'{tot["otd_pct"]}%'),
         ("Retard moyen", f'{tot["retard_moyen_h"]} h'), ("Cout / km", f'{tot["cout_km_mad"]} MAD'),
         ("Perdues", tot["perdues"])])
-    alert = ("<p class='a'>Alerte: " + ", ".join(al) + " sous 85% de ponctualite.</p>") if al else ""
+    alert = ("<p class='a'>Alerte: " + ", ".join(escape(name) for name in al) + " sous 85% de ponctualite.</p>") if al else ""
     return f"""<!doctype html><meta charset="utf-8"><title>KPI Transport</title>
 <style>body{{font:15px system-ui;margin:2rem auto;max-width:900px;color:#1d2433}}
 .c{{display:inline-block;background:#eef3fb;border-radius:10px;padding:12px 18px;margin:4px}}

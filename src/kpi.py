@@ -28,15 +28,17 @@ def summarize(rows, key=None, tol=TOLERANCE_H):
     out = {}
     for name, rs in groups.items():
         delivered = [r for r in rs if r["statut"] == "livre"]
-        ontime = [r for r in delivered if on_time(r, tol)]
-        delays = [delay_hours(r) for r in delivered if delay_hours(r) > tol]
+        delivery_delays = [delay_hours(row) for row in delivered]
+        recorded_delays = [delay for delay in delivery_delays if delay is not None]
+        ontime = sum(delay <= tol for delay in recorded_delays)
+        delays = [delay for delay in recorded_delays if delay > tol]
         km = sum(float(r["km"]) for r in rs)
         cost = sum(float(r["cout_mad"]) for r in rs)
         out[name] = {
             "expeditions": len(rs),
             "livrees": len(delivered),
             "perdues": len(rs) - len(delivered),
-            "otd_pct": round(100 * len(ontime) / len(delivered), 1) if delivered else 0.0,
+            "otd_pct": round(100 * ontime / len(recorded_delays), 1) if recorded_delays else 0.0,
             "retard_moyen_h": round(sum(delays) / len(delays), 1) if delays else 0.0,
             "cout_km_mad": round(cost / km, 2) if km else 0.0,
             "cout_total_mad": round(cost, 2),
